@@ -15,7 +15,7 @@ This app has backend Basket Implementation using Spring Boot and Front end Clien
 * Sign In/ Sign Up page
 * UI section to show all the Product and option to Add or delete them from the cart
 * UI section to see all the current items the cart
-
+* Dependency Management using Maven build tool
 
 ## Getting Started
 
