@@ -33,13 +33,13 @@ class AuthenticationService {
     registerSuccesfulLogin(username, password) {
         sessionStorage.setItem('authenticatedUser', username);
         
-        this.setupAxiosInterceptors(this.createBasicAuthToken(username, password));
+        //this.setupAxiosInterceptors(this.createBasicAuthToken(username, password));
     }
 
     registerSuccesfulLoginForJWT(username, token) {
         sessionStorage.setItem("token",token);
         sessionStorage.setItem('authenticatedUser', username);
-        this.setupAxiosInterceptors(token);
+        //this.setupAxiosInterceptors(token);
     }
 
 
@@ -54,6 +54,8 @@ class AuthenticationService {
 
     logout() {
         sessionStorage.removeItem('authenticatedUser');
+        sessionStorage.removeItem("basketId");
+        sessionStorage.removeItem("token");
     }
 
     isUserLoggedIn() {

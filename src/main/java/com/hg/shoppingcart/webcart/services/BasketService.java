@@ -1,5 +1,6 @@
 package com.hg.shoppingcart.webcart.services;
 
+import com.hg.shoppingcart.webcart.DTO.BasketDetailsDTO;
 import com.hg.shoppingcart.webcart.DTO.CartDTO;
 import com.hg.shoppingcart.webcart.model.Basket;
 import com.hg.shoppingcart.webcart.model.BasketDetails;
@@ -9,15 +10,14 @@ import com.hg.shoppingcart.webcart.repositories.BasketDetailsRepository;
 import com.hg.shoppingcart.webcart.repositories.BasketRepository;
 import com.hg.shoppingcart.webcart.repositories.ProductRepository;
 import com.hg.shoppingcart.webcart.repositories.UserRepository;
+import com.hg.shoppingcart.webcart.utils.BasketDetailsToDTO;
 import com.hg.shoppingcart.webcart.utils.LoggedInUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("BasketService")
 public class BasketService {
@@ -37,6 +37,7 @@ public class BasketService {
     public Basket updateBasketItems(CartDTO cartDTO) {
         String username = LoggedInUser.getCurrentUser();
         Users user = userRepository.findByUsername(username);
+        System.out.println("username =>" + username);
         Long basketNumber = cartDTO.getBasketNumber();
         Long productCode = cartDTO.getProductCode();
         Optional<Basket> basketDb = Optional.ofNullable(null);
@@ -52,19 +53,32 @@ public class BasketService {
             basket.setCustomerUserName(user.getUsername());
             basket.setAmount(productDb.getPrice());
             basket.setBasketNumber(UUID.randomUUID().toString());
-            Basket basketReponse = basketRepository.save(basket);
+            Basket basketResponse = basketRepository.save(basket);
 
             BasketDetails basketDetails = new BasketDetails();
             basketDetails.setAmount(productDb.getPrice());
             basketDetails.setPrice(productDb.getPrice());
-            basketDetails.setBasket(basketReponse);
+            basketDetails.setBasket(basketResponse);
             basketDetails.setProduct(productDb);
             basketDetails.setQuanity(cartDTO.getQuantity());
             basketDetailsRepository.save(basketDetails);
         } else if (basketDb.isPresent()) {
             List<BasketDetails> basketDetails = basketDetailsRepository.findAllByBasketId(basketNumber);
-            for (BasketDetails basketDetail : basketDetails) {
-                if (basketDetail.getProduct().getId() == productCode) {
+            //Filter the basketDetails based on the product Id
+            List<BasketDetails> basketDetailsFilter = basketDetails.stream().filter(basketDetail -> basketDetail.getProduct().getId() == productCode).collect(Collectors.toList());
+            //If product is not there in basketDetails we have to persist it in BasketDetails
+            if (basketDetailsFilter.size() == 0) {
+                BasketDetails bsd = new BasketDetails();
+                bsd.setAmount(productDb.getPrice());
+                bsd.setPrice(productDb.getPrice());
+                bsd.setBasket(basketDb.get());
+                bsd.setProduct(productDb);
+                bsd.setQuanity(cartDTO.getQuantity());
+                basketDetailsRepository.save(bsd);
+            }
+            //If the product is not there in
+            else {
+                for (BasketDetails basketDetail : basketDetailsFilter) {
                     basketDetail.setQuanity((basketDetail.getQuanity() + cartDTO.getQuantity()));
                     if (basketDetail.getQuanity() < 1) {
                         basketDetailsRepository.delete(basketDetail);
@@ -77,18 +91,14 @@ public class BasketService {
         return basket;
     }
 
-    public List<BasketDetails> getUserItems() {
+    public List<BasketDetailsDTO> getUserItems() {
         String username = LoggedInUser.getCurrentUser();
-        System.out.println(username);
         Basket basket = basketRepository.findByCustomerUserName(username);
-        System.out.println("*********************");
-        System.out.println(basketRepository.findByCustomerUserName(username));
-        System.out.println("*********************");
-        System.out.println(basket.getId());
         List<BasketDetails> basketDetails = basketDetailsRepository.findAllByBasketId(basket.getId());
-        System.out.println("*******basket details************");
-        System.out.println(basketDetails);
-        System.out.println("*******************");
-        return basketDetails;
+        List<BasketDetailsDTO> basketDetailsDTOS =  new ArrayList<>();
+        for(BasketDetails basketDetails1 : basketDetails){
+            basketDetailsDTOS.add(BasketDetailsToDTO.convertToDTO(basketDetails1));
+        }
+        return basketDetailsDTOS;
     }
 }

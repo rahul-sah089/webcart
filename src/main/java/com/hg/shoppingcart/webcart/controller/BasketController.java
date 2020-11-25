@@ -1,5 +1,6 @@
 package com.hg.shoppingcart.webcart.controller;
 
+import com.hg.shoppingcart.webcart.DTO.BasketDetailsDTO;
 import com.hg.shoppingcart.webcart.DTO.CartDTO;
 import com.hg.shoppingcart.webcart.model.Basket;
 import com.hg.shoppingcart.webcart.model.BasketDetails;
@@ -24,8 +25,11 @@ public class BasketController {
     }
 
     @GetMapping(value = "/fetchItems")
-    public ResponseEntity<List<BasketDetails>> fetchItems(){
-        List<BasketDetails> basketsDetails = basketItemService.getUserItems();
+    public ResponseEntity<List<BasketDetailsDTO>> fetchItems(){
+        List<BasketDetailsDTO> basketsDetails = basketItemService.getUserItems();
+        System.out.println("**********baskt details**************");
+        System.out.println(basketsDetails);
+        System.out.println("**********baskt details**************");
         return ResponseEntity.ok(basketsDetails);
     }
 }

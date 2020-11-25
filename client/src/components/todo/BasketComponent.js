@@ -11,11 +11,11 @@ export default class BasketComponent extends Component {
         this.refreshBasketItems = this.refreshBasketItems.bind(this);
     }
     componentDidMount() {
-        this.refreshTodos();
+        this.refreshBasketItems();
     }
 
     refreshBasketItems() {
-        ProductDataService.retrieveBasketItems().then(response => this.setState({ items: response.data }));
+        ProductDataService.retrieveBasketItems().then(response => this.setState({ products: response.data }));
     }
 
 
@@ -33,20 +33,22 @@ export default class BasketComponent extends Component {
                             <thead>
                                 <tr>
                                     <th>Product Id</th>
-                                    <th>Product Price</th>
-                                    <th>Total Amount</th>
+                                    <th>Product Name</th>
                                     <th>Product Quantity</th>
+                                    <th>Product Price</th>
+                                    <th>Order Date</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {
-                                    this.state.items.map(
+                                    this.state.products.map(
                                         (item) =>
                                             <tr>
-                                                <td>{item.id}</td>
-                                                <td>{item.amount}</td>
-                                                <td>{item.price}</td>
+                                                <td>{item.productId}</td>
+                                                <td>{item.productName}</td>
                                                 <td>{item.quantity}</td>
+                                                <td>{item.productPrice}</td>
+                                                <td>{item.orderDate}</td>
                                             </tr >
                                     )
                                 }
